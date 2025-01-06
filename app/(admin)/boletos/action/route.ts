@@ -16,7 +16,7 @@ export async function POST(request: NextRequest,) {
         redirect('/boletos')
     } catch (error) {
         const e = btoa(JSON.stringify(error))
-        redirect(`/boletos?error=${e}`)
+        redirect(`/boletos?e=${e}`)
     }
 
 }
