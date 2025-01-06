@@ -14,5 +14,12 @@ export default {
       },
     },
   },
-  plugins: [],
+  daisyui: {
+   themes: ['pastel']
+  },
+  plugins: [
+    require('daisyui')
+  ],
 } satisfies Config;
+
+//99320000075026

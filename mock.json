@@ -1,0 +1,46 @@
+{
+  "boletos": [
+    {
+      "id": "c61e",
+      "descricao": "desc",
+      "vencimento": "2024-12-31",
+      "valor": 100.99
+    },
+    {
+      "id": "6447",
+      "descricao": "desc",
+      "vencimento": "2024-12-31",
+      "valor": 100.99
+    },
+    {
+      "id": "1d38",
+      "descricao": "desc",
+      "vencimento": "2024-12-31",
+      "valor": 100.99
+    },
+    {
+      "id": "1a8b",
+      "descricao": "desc",
+      "vencimento": "2024-12-31",
+      "valor": 100.99
+    },
+    {
+      "id": "b397",
+      "descricao": "desc",
+      "vencimento": "2024-12-31",
+      "valor": 100.99
+    },
+    {
+      "id": "0c43",
+      "descricao": "desc",
+      "vencimento": "2024-12-31",
+      "valor": 100.99
+    },
+    {
+      "id": "5ecc",
+      "descricao": "desc",
+      "vencimento": "2024-12-31",
+      "valor": 100.99
+    }
+  ]
+}
