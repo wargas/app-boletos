@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Head from 'next/head'
+
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -24,6 +26,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <Head>
+        <title>Gerenciador de Boletos</title>
+      </Head>
       <body data-theme="pastel"
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
