@@ -12,6 +12,8 @@ export default async function Logion() {
       <form action={fazerLogin}>
         <button type='submit'>Entrar</button>
       </form>
+
+      <span>BUILD: {process.env.BUILD_TIMESTAMP||''}</span>
     </div>
   );
 }
