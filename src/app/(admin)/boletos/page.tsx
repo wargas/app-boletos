@@ -1,9 +1,10 @@
 import { ActionsBoleto } from "@/components/actions-boleto";
 import { ButtonCadastrar, DialogBoleto } from "@/components/form-boleto";
 import { FormSearch } from "@/components/form-search";
+import { PaginateBoletos } from "@/components/paginate-boletos";
 import { AppTableHead } from "@/components/table-head";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import Api from "@/lib/api";
 import { format, parse, subDays } from "date-fns";
 import { orderBy } from "lodash";
@@ -39,15 +40,16 @@ type SearchParams = Promise<{
     start?: string
     end?: string,
     sort?: string,
-    order?: 'asc' | 'desc'
+    order?: 'asc' | 'desc',
+    page?: string
 }>
 
 const defaultStart = format(subDays(new Date(), 30), 'dd/MM/yyyy')
 const defaultEnd = format(new Date(), 'dd/MM/yyyy')
 
-export default async function BoletosPage({searchParams}: {searchParams: SearchParams}) {
+export default async function BoletosPage({ searchParams }: { searchParams: SearchParams }) {
 
-    const { start = defaultStart, end = defaultEnd, sort = 'id', order = 'asc' } =  await searchParams
+    const { start = defaultStart, end = defaultEnd, sort = 'id', order = 'asc', page = '1' } = await searchParams
 
     const parsedStart = parse(start, 'dd/MM/yyyy', new Date());
     const parsedEnd = parse(end, 'dd/MM/yyyy', new Date());
@@ -56,6 +58,7 @@ export default async function BoletosPage({searchParams}: {searchParams: SearchP
         params: {
             start: format(parsedStart, 'yyyy-MM-dd'),
             end: format(parsedEnd, 'yyyy-MM-dd'),
+            page: page
         }
     })
 
@@ -106,13 +109,18 @@ export default async function BoletosPage({searchParams}: {searchParams: SearchP
 
                         ))}
                     </TableBody>
-                    <TableCaption className="text-right pb-4 px-4">
-                        Filtrando entre {parsedStart.toLocaleDateString('pt-BR')} a {parsedEnd.toLocaleDateString('pt-BR')}
-                    </TableCaption>
                 </Table>
 
 
             </CardContent>
+            <CardFooter className="border-t pt-4">
+                <div className="flex justify-between items-center w-full">
+                    <span className="text-sm text-stone-400">Filtrando {data.meta.total} boletos em {data.meta.lastPage} páginas entre {parsedStart.toLocaleDateString('pt-BR')} a {parsedEnd.toLocaleDateString('pt-BR')}</span>
+                    {data.meta.lastPage > 1 && (
+                        <PaginateBoletos pages={data.meta.lastPage} />
+                    )}
+                </div>
+            </CardFooter>
         </Card>
     </div>
 }

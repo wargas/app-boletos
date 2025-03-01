@@ -30,8 +30,11 @@ export function FormSearch({defaultStart, defaultEnd}: Props) {
 
     const onSubmit = useCallback((values:any) => {
         const queryParams = new URLSearchParams({
-            ...values
+            ...values,
+            page: '1'
         }).toString()
+
+        
         
         router.replace(pathname+'?'+queryParams)
     }, [params])
