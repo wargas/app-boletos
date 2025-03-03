@@ -1,13 +1,12 @@
 'use client'
 import { ChevronsLeft, ChevronsRight } from "lucide-react"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import { useMemo } from "react"
+import { setSearchParam } from "./search-query"
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination"
 
 export function PaginateBoletos({ pages }: { pages: number }) {
     const params = useSearchParams()
-    const router = useRouter()
-    const pathname = usePathname()
 
     const currentPage = parseInt(params.get('page') || '1')
 
@@ -18,11 +17,7 @@ export function PaginateBoletos({ pages }: { pages: number }) {
     }, [currentPage, pages])
 
     const gotToPage = (page: string | number) => {
-        const qs = new URLSearchParams(params)
-
-        qs.set('page', page.toString())
-
-        router.replace(`${pathname}?${qs.toString()}`, { scroll: false })
+        setSearchParam({page: String(page)})
     }
 
     return (

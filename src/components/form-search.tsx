@@ -1,9 +1,10 @@
 "use client"
 
 import { FilterIcon } from "lucide-react"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import { useCallback } from "react"
 import { useForm } from "react-hook-form"
+import { setSearchParam } from "./search-query"
 import { Button } from "./ui/button"
 import { InputDate } from "./ui/input-date"
 
@@ -16,8 +17,6 @@ type Props = {
 export function FormSearch({defaultStart, defaultEnd}: Props) {
 
     const params = useSearchParams()
-    const router = useRouter()
-    const pathname = usePathname()
 
     const {register, handleSubmit, watch} = useForm({
         defaultValues: {
@@ -26,17 +25,8 @@ export function FormSearch({defaultStart, defaultEnd}: Props) {
         }
     })
 
-    const values = watch()
-
     const onSubmit = useCallback((values:any) => {
-        const queryParams = new URLSearchParams({
-            ...values,
-            page: '1'
-        }).toString()
-
-        
-        
-        router.replace(pathname+'?'+queryParams)
+        setSearchParam({...values, page: '1'})
     }, [params])
 
     return (
