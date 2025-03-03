@@ -1,6 +1,7 @@
 import { SearchQuery } from "@/components/search-query";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -29,7 +30,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
-        <SearchQuery />
+        <Suspense fallback={<div />}>
+          <SearchQuery />
+
+        </Suspense>
       </body>
     </html>
   );
