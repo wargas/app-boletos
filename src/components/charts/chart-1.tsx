@@ -3,8 +3,6 @@
 import { formatDate } from "date-fns"
 import { useRouter } from "next/navigation"
 import { Bar, BarChart, XAxis } from "recharts"
-import { setSearchParam } from "../search-query"
-import { Button } from "../ui/button"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../ui/chart"
 
 type Chart1Props = {
@@ -41,7 +39,6 @@ export function Chart1({ data }: Chart1Props) {
                     <Bar onClick={handleClickBar} dataKey={'value'} fill="blue" radius={5} />
                 </BarChart>
             </ChartContainer>
-            <Button onClick={() => setSearchParam({page: 'dashboard'})}>Set query</Button>
         </>
     )
 }

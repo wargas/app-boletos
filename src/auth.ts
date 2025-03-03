@@ -20,11 +20,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 email: {},
                 password: {}
             },
-            async authorize(formData) {
+            async authorize({email, password}) {
+                console.log({email, password})
                 try {
                     const { data } = await Api.post('auth', {
-                        email: formData.email,
-                        password: formData.password
+                        email,
+                        password
                     });
 
                     return {

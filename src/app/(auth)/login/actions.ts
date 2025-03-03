@@ -1,19 +1,24 @@
 "use server"
 import { signIn, signOut } from "@/auth";
+import { get } from "lodash";
 
 export async function fazerLogin(state: any, data: FormData) {
 
     try {
 
-        await signIn('credentials', data)
+        await signIn('credentials', {
+            email: data.get('email'),
+            password: data.get('password'),
+            redirect: false
+        })
 
         return { error: false, message: 'logado' }
 
     } catch (error: any) {
-        if (error.message == "NEXT_REDIRECT") {
-            return { error: false, message: 'logado' }
+        if(get(error, 'type') == 'CredentialsSignin') {
+            return {error: true, email: data.get('email'), message: 'Email ou senha incorretos'}
         }
-        return { error: true, email: data.get('email'), message: 'Credenciais invalidas' }
+        return { error: true, email: data.get('email'), message: 'Ocorreu um erro interno' }
 
     }
 }

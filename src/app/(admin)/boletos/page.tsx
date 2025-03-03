@@ -62,6 +62,8 @@ export default async function BoletosPage({ searchParams }: { searchParams: Sear
         }
     })
 
+    
+
     return <div>
         <DialogBoleto />
         <Card>

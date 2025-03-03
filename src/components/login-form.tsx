@@ -25,10 +25,13 @@ export function LoginForm({
   const router = useRouter()
   const [state, dispach, isPending] = useActionState<any, any>(fazerLogin, { error: false, message: '' })
 
-  if(state?.message == 'logado') {
-    router.replace('/login?logado=1')
+  if (state?.message == 'logado') {
+    router.refresh()
+    return <div className="w-full flex justify-center">
+      <Loader2 className="animate-spin" />
+    </div>
   }
-  
+
   return (
 
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -78,9 +81,9 @@ export function LoginForm({
                 )}
                 Login
               </Button>
-             
+
             </div>
-           
+
           </Form>
         </CardContent>
       </Card>
