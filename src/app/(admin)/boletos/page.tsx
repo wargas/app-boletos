@@ -80,7 +80,8 @@ export default async function BoletosPage({ searchParams }: { searchParams: Sear
     const data = await prisma.boleto.findMany({
         take: PER_PAGE,
         skip,
-        where
+        where,
+        orderBy: { due: 'desc'}
     })
 
     const pages = Math.floor(meta._count.id / PER_PAGE) + (meta._count.id % PER_PAGE === 0 ? 0 : 1)
