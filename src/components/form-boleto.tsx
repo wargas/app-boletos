@@ -3,9 +3,10 @@ import EventEmitter from 'eventemitter3'
 
 const emitter = new EventEmitter()
 
+import { useQuery } from '@tanstack/react-query'
 import axios, { isAxiosError } from 'axios'
-import { format, formatDate, parse } from 'date-fns'
-import { Loader2, Pencil, PlusIcon } from 'lucide-react'
+import { format, parse } from 'date-fns'
+import { Loader2, Loader2Icon, Pencil, PlusIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { ChangeEvent, useCallback, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -32,19 +33,44 @@ export type Boleto = {
 }
 
 
-export function FormBoleto({ boleto }: { boleto: Boleto | null }) {
+export function FormBoleto({ id }: { id: string | null }) {
 
     const router = useRouter()
 
     const { register, handleSubmit, watch, setValue, formState } = useForm({
         defaultValues: {
-            descricao: boleto?.description || '',
-            valor: boleto?.value.toLocaleString('pt-BR', { maximumFractionDigits: 2, minimumFractionDigits: 2 }) || '',
-            data: boleto ? formatDate(parse(boleto.due, 'yyyy-MM-dd', new Date()), 'dd/MM/yyyy') : ''
+            descricao: '',
+            valor: '',
+            data: ''
         }
     })
 
+    const { isFetching } = useQuery({
+        queryKey: ['boletos', id],
+        queryFn: async () => {
+            const response = await fetch(`/api/boletos/${id}`)
+
+            if (response.status !== 200) {
+                throw new Error("Erro na request")
+            }
+
+            const json = await response.json() as Boleto
+
+            setValue('descricao', json.description)
+            setValue('data', format(new Date(json.due), 'dd/MM/yyyy'))
+            setValue('valor', json.value.toLocaleString('pt-BR', {
+                maximumFractionDigits: 2,
+                minimumFractionDigits: 2
+            }))
+
+            return json;
+
+        },
+        enabled: !!id && id?.length > 0
+    })
+
     async function onSubmit(values: any) {
+        
         const toastId = toast.loading('salvando boleto')
         try {
             const preparedValues = {
@@ -55,8 +81,10 @@ export function FormBoleto({ boleto }: { boleto: Boleto | null }) {
                     .replaceAll(',', '.'))
             }
 
-            if (boleto) {
-                await axios.put(`/api/boletos/${boleto.id}`, preparedValues)
+            if (id) {
+
+                console.log(preparedValues)
+                await axios.put(`/api/boletos/${id}`, preparedValues)
 
 
             } else {
@@ -96,11 +124,15 @@ export function FormBoleto({ boleto }: { boleto: Boleto | null }) {
 
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-4'>
-
+        <form onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-4 relative'>
+            {isFetching && (
+                <div className='absolute inset-[-10px] bg-white flex justify-center items-center'>
+                    <Loader2Icon className='animate-spin' />
+                </div>
+            )}
             <div>
                 <Label>Descrição</Label>
-                <Input {...register('descricao')} />
+                <Input autoComplete='off' {...register('descricao')} />
             </div>
             <div>
                 <Label>Data</Label>
@@ -129,7 +161,7 @@ export function FormBoleto({ boleto }: { boleto: Boleto | null }) {
 export function DialogBoleto() {
 
     const [open, setOpen] = useState(false)
-    const [boleto, setBoleto] = useState<any>(null)
+    const [boleto, setBoleto] = useState<string>('')
 
     useEffect(() => {
 
@@ -158,15 +190,15 @@ export function DialogBoleto() {
                         Informe os dados do boleto para cadastrar
                     </DialogDescription>
                 </DialogHeader>
-                <FormBoleto boleto={boleto} />
+                <FormBoleto id={boleto} />
             </DialogContent>
 
         </Dialog>
     )
 }
 
-export function ButtonEditar({ boleto }: any) {
-    return <Button onClick={() => openDialog(boleto)} size={'icon'} variant={'ghost'}>
+export function ButtonEditar({ id }: { id: string }) {
+    return <Button onClick={() => openDialog(id)} size={'icon'} variant={'ghost'}>
         <Pencil />
     </Button>
 }
@@ -177,9 +209,9 @@ export function ButtonCadastrar() {
     </Button>
 }
 
-export function openDialog(boleto: any = null) {
+export function openDialog(id: string | null = null) {
 
-    emitter.emit(`open`, boleto);
+    emitter.emit(`open`, id);
 
     return new Promise(acc => {
         emitter.on('close', () => {

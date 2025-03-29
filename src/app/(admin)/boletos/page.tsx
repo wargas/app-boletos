@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import { ActionsBoleto } from "@/components/actions-boleto";
 import { ButtonCadastrar, DialogBoleto } from "@/components/form-boleto";
 import { FormSearch } from "@/components/form-search";
@@ -5,9 +6,8 @@ import { PaginateBoletos } from "@/components/paginate-boletos";
 import { AppTableHead } from "@/components/table-head";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import Api from "@/lib/api";
+import { prisma } from "@/lib/prisma";
 import { format, parse, subDays } from "date-fns";
-import { orderBy } from "lodash";
 
 
 type SearchResult = {
@@ -46,23 +46,44 @@ type SearchParams = Promise<{
 
 const defaultStart = format(subDays(new Date(), 30), 'dd/MM/yyyy')
 const defaultEnd = format(new Date(), 'dd/MM/yyyy')
+const PER_PAGE = 15
 
 export default async function BoletosPage({ searchParams }: { searchParams: SearchParams }) {
 
+    const session = await auth()
+
     const { start = defaultStart, end = defaultEnd, sort = 'id', order = 'asc', page = '1' } = await searchParams
 
-    const parsedStart = parse(start, 'dd/MM/yyyy', new Date());
+    const skip = (parseInt(page) - 1) * PER_PAGE
+
+    const parsedStart = parse(`${start}`, 'dd/MM/yyyy', new Date());
     const parsedEnd = parse(end, 'dd/MM/yyyy', new Date());
 
-    const { data } = await Api.get<SearchResult>("/search", {
-        params: {
-            start: format(parsedStart, 'yyyy-MM-dd'),
-            end: format(parsedEnd, 'yyyy-MM-dd'),
-            page: page
-        }
+    parsedStart.setHours(0, 0, 1)
+    parsedEnd.setHours(20, 59, 59)
+
+    const where = {
+        user_id: session?.user?.id,
+        due: { gte: parsedStart, lte: parsedEnd }
+    }
+
+    const meta = await prisma.boleto.aggregate({
+        _sum: {
+            value: true
+        },
+        _count: {
+            id: true
+        },
+        where
     })
 
-    
+    const data = await prisma.boleto.findMany({
+        take: PER_PAGE,
+        skip,
+        where
+    })
+
+    const pages = Math.floor(meta._count.id / PER_PAGE) + (meta._count.id % PER_PAGE === 0 ? 0 : 1)
 
     return <div>
         <DialogBoleto />
@@ -71,13 +92,14 @@ export default async function BoletosPage({ searchParams }: { searchParams: Sear
                 <div className="flex items-center justify-between">
                     <FormSearch defaultStart={defaultStart} defaultEnd={defaultEnd} />
                     <div className="flex items-center gap-4">
-                        <h1 className="text-lg">Total: <span className="font-bold">{data.sum.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></h1>
+                        <h1 className="text-lg">Total: <span className="font-bold">{meta._sum.value?.toNumber()?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span></h1>
                         <ButtonCadastrar />
                     </div>
                 </div>
             </CardHeader>
             <CardContent className="p-0 border-t">
                 <Table className="caption-bottom">
+                    
                     <TableHeader>
                         <TableRow>
                             <TableHead>
@@ -96,15 +118,15 @@ export default async function BoletosPage({ searchParams }: { searchParams: Sear
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {orderBy(data.data, sort, order).map((boleto: any) => (
+                        {data.map(b => ({...b, value: b.value.toNumber()})).map((boleto) => (
                             <TableRow key={boleto.id}>
-                                <TableCell>{boleto.id}</TableCell>
+                                <TableCell>{boleto.id.toString().substring(0, 5)}</TableCell>
                                 <TableCell>{boleto.description}</TableCell>
-                                <TableCell>{format(String(boleto.due), 'dd/MM/yyyy')}</TableCell>
-                                <TableCell className="text-right">{boleto.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</TableCell>
+                                <TableCell>{format(boleto.due, 'dd/MM/yyyy')} </TableCell>
+                                <TableCell className="text-right">{boleto.value?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</TableCell>
                                 <TableCell className="text-right">
 
-                                    <ActionsBoleto boleto={boleto} />
+                                    <ActionsBoleto id={boleto.id} />
 
                                 </TableCell>
                             </TableRow>
@@ -117,9 +139,9 @@ export default async function BoletosPage({ searchParams }: { searchParams: Sear
             </CardContent>
             <CardFooter className="border-t pt-4">
                 <div className="flex justify-between items-center w-full">
-                    <span className="text-sm text-stone-400">Filtrando {data.meta.total} boletos em {data.meta.lastPage} páginas entre {parsedStart.toLocaleDateString('pt-BR')} a {parsedEnd.toLocaleDateString('pt-BR')}</span>
-                    {data.meta.lastPage > 1 && (
-                        <PaginateBoletos pages={data.meta.lastPage} />
+                    <span className="text-sm text-stone-400">Filtrando {meta._count.id} boletos em {pages} páginas entre {parsedStart.toLocaleDateString('pt-BR')} a {parsedEnd.toLocaleDateString('pt-BR')}</span>
+                    {pages > 1 && (
+                        <PaginateBoletos pages={pages} />
                     )}
                 </div>
             </CardFooter>

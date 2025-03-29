@@ -59,7 +59,7 @@ export function LoginForm({
                   type="email"
                   defaultValue={state?.email || ''}
                   name="email"
-                  placeholder="m@example.com"
+                  placeholder="exemplo@exemplo.com"
                   required
                 />
               </div>

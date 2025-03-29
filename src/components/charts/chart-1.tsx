@@ -25,7 +25,7 @@ export function Chart1({ data }: Chart1Props) {
 
 
     function handleClickBar(data: any, index: number): void {
-        const dateFormat = formatDate(data.date + ' 03:00:01', 'dd/MM/yyyy')
+        const dateFormat = formatDate(data.date, 'dd/MM/yyyy')
 
         router.replace(`/boletos?start=${dateFormat}&end=${dateFormat}&page=1`)
     }

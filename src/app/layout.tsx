@@ -1,4 +1,5 @@
 import { SearchQuery } from "@/components/search-query";
+import { QueryProvider } from "@/providers/query.provider";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Suspense } from "react";
@@ -29,11 +30,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
-        <Suspense fallback={<div />}>
-          <SearchQuery />
+        <QueryProvider>
 
-        </Suspense>
+          {children}
+          <Suspense fallback={<div />}>
+            <SearchQuery />
+
+          </Suspense>
+        </QueryProvider>
       </body>
     </html>
   );

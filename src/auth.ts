@@ -1,17 +1,8 @@
+import bcrypt from "bcryptjs";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import Api from "./lib/api";
+import { prisma } from "./lib/prisma";
 
-declare module 'next-auth' {
-    interface Session {
-        api_token: string;
-
-    }
-
-    interface User {
-        acessToken: string
-    }
-}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
     providers: [
@@ -21,18 +12,26 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 password: {}
             },
             async authorize({email, password}) {
-                console.log({email, password})
                 try {
-                    const { data } = await Api.post('auth', {
-                        email,
-                        password
-                    });
 
+                    const user = await prisma.user.findFirst({
+                        where: {email: email as string}
+                    })
+
+                    if(!user) {
+                        return null
+                    }
+
+                    const validPass = bcrypt.compareSync(password as string, user.password)
+
+                    if(!validPass) {
+                        return null
+                    }
+                    
                     return {
-                        name: data.user.fullName,
-                        email: data.user.email,
-                        id: String(data.user.id),
-                        acessToken: data.token
+                        name: user.full_name,
+                        email: user.email,
+                        id: String(user.id),
                     };
                 } catch (error) {
                     return null;
@@ -41,15 +40,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         })
     ],
     callbacks: {
-        jwt({ token, user }) {
-            if (user) {
-                token.accessToken = user.acessToken
-            }
+        // jwt({ token, user }) {
+        //     if (user) {
+        //         token.accessToken = user.acessToken
+        //     }
 
-            return token;
-        },
+        //     return token;
+        // },
         session({ session, token }) {
-            session.api_token = String(token.accessToken)
+            session.user.id = String(token.sub)
 
             return session
         }

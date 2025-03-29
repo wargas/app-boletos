@@ -5,20 +5,21 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ButtonEditar } from "./form-boleto";
 import { Button } from "./ui/button";
+
 type Props = {
-    boleto: any
+     id: string 
 }
-export function ActionsBoleto({ boleto }: Props) {
+export function ActionsBoleto({ id }: Props) {
 
     const router = useRouter()
 
     async function handleDelete() {
         const toastId = toast.loading('Excluindo')
         try {
-            await axios.delete(`api/boletos/${boleto.id}`)
-    
+            await axios.delete(`api/boletos/${id}`)
+
             toast.success(`Boleto excluído com sucesso`)
-    
+
             router.refresh()
         } catch (error) {
             toast.error(`Erro ao tentar excluir`)
@@ -32,7 +33,7 @@ export function ActionsBoleto({ boleto }: Props) {
             <Button onClick={handleDelete} size={'icon'} variant={'ghost'}>
                 <TrashIcon />
             </Button>
-            <ButtonEditar boleto={boleto} />
+            <ButtonEditar id={id} />
         </div>
     )
 }
