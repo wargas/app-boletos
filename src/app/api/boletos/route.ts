@@ -1,13 +1,20 @@
 import { auth } from "@/auth";
-import Api from "@/lib/api";
 import { prisma } from "@/lib/prisma";
 
 export  async function GET(req: Request) {
     const session = await auth()
-    
-    const boletos = await Api.get('boletos')
 
-    return Response.json(boletos.data);
+    if (!session?.user?.id) {
+        throw new Error("USER NOT AUTHENTICAD")
+    }
+    
+    const boletos = await prisma.boleto.findMany({
+        where: {
+            user_id: session?.user?.id
+        }
+    })
+
+    return Response.json(boletos);
 }
 
 export  async function POST(req: Request) {
